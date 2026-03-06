@@ -1,11 +1,30 @@
-import { provideFluentDesignSystem, fluentButton } from '@fluentui/web-components';
+import {
+  provideFluentDesignSystem,
+  fluentButton,
+  fluentCard,
+  fluentTabs,
+  fluentTab,
+  fluentTabPanel,
+  fluentBadge,
+  fluentDivider,
+  fluentDesignSystemProvider,
+} from '@fluentui/web-components';
 import { parseCin } from './cin-parser';
 import { ImeEngine } from './ime-engine';
 import { ImeUI } from './ime-ui';
 import { PracticeController } from './practice';
 import './ime-style.css';
 
-provideFluentDesignSystem().register(fluentButton());
+provideFluentDesignSystem().register(
+  fluentButton(),
+  fluentCard(),
+  fluentTabs(),
+  fluentTab(),
+  fluentTabPanel(),
+  fluentBadge(),
+  fluentDivider(),
+  fluentDesignSystemProvider(),
+);
 
 async function loadCinTable(url: string) {
   const res = await fetch(url);
@@ -28,39 +47,25 @@ async function init() {
   ime.attachTo(textarea);
   ime.mount(document.body);
 
-  // Practice modes
+  // Practice controller — mounts into both tab panels
   const practiceArea = document.getElementById('practice-area')!;
-  const practice = new PracticeController(practiceArea);
+  const articleArea = document.getElementById('article-area')!;
+  const practice = new PracticeController(practiceArea, articleArea);
   practice.initFromTable(mainTable, specialTable, shortcodeTable);
   practice.mount();
 
-  // Mode toggle buttons
-  const modeFree = document.getElementById('mode-free')!;
-  const modeRandom = document.getElementById('mode-random')!;
-  const modeArticle = document.getElementById('mode-article')!;
-  const modeButtons = [modeFree, modeRandom, modeArticle];
-
-  function setActiveButton(active: HTMLElement) {
-    for (const btn of modeButtons) btn.classList.remove('active');
-    active.classList.add('active');
-  }
-
-  modeFree.addEventListener('click', () => {
-    practice.stop();
-    textarea.style.display = '';
-    setActiveButton(modeFree);
-  });
-
-  modeRandom.addEventListener('click', () => {
-    textarea.style.display = 'none';
-    practice.start('random-char');
-    setActiveButton(modeRandom);
-  });
-
-  modeArticle.addEventListener('click', () => {
-    textarea.style.display = 'none';
-    practice.start('typing-article');
-    setActiveButton(modeArticle);
+  // Tab switching
+  const mainTabs = document.getElementById('main-tabs')!;
+  mainTabs.addEventListener('change', () => {
+    const activeTab = mainTabs.querySelector('fluent-tab[aria-selected="true"]');
+    const id = activeTab?.id;
+    if (id === 'tab-intro' || id === 'tab-free') {
+      practice.stop();
+    } else if (id === 'tab-random') {
+      practice.start('random-char');
+    } else if (id === 'tab-article') {
+      practice.start('typing-article');
+    }
   });
 
   // Wire IME commits to practice controller

@@ -5,14 +5,11 @@ export type PracticeMode = 'random-char' | 'typing-article';
 
 export interface PracticeState {
   mode: PracticeMode;
-  /** The target text to type */
   targetText: string;
-  /** Current position in the target text */
   position: number;
-  /** Number of correct inputs */
   correct: number;
-  /** Number of incorrect inputs */
   incorrect: number;
+  startTime: number | null;
 }
 
 export class PracticeController {
@@ -20,16 +17,21 @@ export class PracticeController {
   private charPool: string[] = [];
   private reverseMap: Map<string, string[]> = new Map();
   private mainKeyNames: Record<string, string> = {};
+  private showHint = false;
 
-  private containerEl: HTMLElement;
+  private randomEl: HTMLElement;
+  private articleEl: HTMLElement;
   private promptEl: HTMLElement;
   private statsEl: HTMLElement;
   private articleSelectEl: HTMLElement;
+  private articlePromptEl: HTMLElement;
+  private articleStatsEl: HTMLElement;
 
   private onModeChange: (() => void) | null = null;
 
-  constructor(container: HTMLElement) {
-    this.containerEl = container;
+  constructor(randomContainer: HTMLElement, articleContainer: HTMLElement) {
+    this.randomEl = randomContainer;
+    this.articleEl = articleContainer;
 
     this.promptEl = document.createElement('div');
     this.promptEl.className = 'practice-prompt';
@@ -39,14 +41,18 @@ export class PracticeController {
 
     this.articleSelectEl = document.createElement('div');
     this.articleSelectEl.className = 'practice-article-select';
-    this.articleSelectEl.style.display = 'none';
+
+    this.articlePromptEl = document.createElement('div');
+    this.articlePromptEl.className = 'practice-prompt';
+
+    this.articleStatsEl = document.createElement('div');
+    this.articleStatsEl.className = 'practice-stats';
   }
 
   setModeChangeCallback(cb: () => void): void {
     this.onModeChange = cb;
   }
 
-  /** Build the character pool and reverse lookup from the main table */
   initFromTable(main: CinTable, special: CinTable, shortcode: CinTable): void {
     this.mainKeyNames = main.keyNames;
     const seen = new Set<string>();
@@ -67,21 +73,20 @@ export class PracticeController {
     addReverse(special);
     addReverse(shortcode);
 
-    // Only keep CJK Unified Ideographs for random practice
     this.charPool = [...seen].filter(ch => {
       const cp = ch.codePointAt(0)!;
       return cp >= 0x4E00 && cp <= 0x9FFF;
     });
   }
 
-  /** Mount the practice UI into the container */
   mount(): void {
-    this.containerEl.appendChild(this.promptEl);
-    this.containerEl.appendChild(this.statsEl);
-    this.containerEl.appendChild(this.articleSelectEl);
+    this.randomEl.appendChild(this.promptEl);
+    this.randomEl.appendChild(this.statsEl);
+    this.articleEl.appendChild(this.articleSelectEl);
+    this.articleEl.appendChild(this.articlePromptEl);
+    this.articleEl.appendChild(this.articleStatsEl);
   }
 
-  /** Start a practice mode */
   start(mode: PracticeMode): void {
     if (mode === 'random-char') {
       this.startRandomChar();
@@ -91,12 +96,13 @@ export class PracticeController {
     this.onModeChange?.();
   }
 
-  /** Stop the current practice */
   stop(): void {
     this.state = null;
     this.promptEl.innerHTML = '';
     this.statsEl.textContent = '';
-    this.articleSelectEl.style.display = 'none';
+    this.articleSelectEl.innerHTML = '';
+    this.articlePromptEl.innerHTML = '';
+    this.articleStatsEl.textContent = '';
     this.onModeChange?.();
   }
 
@@ -108,16 +114,18 @@ export class PracticeController {
     return this.state?.mode ?? null;
   }
 
-  /** Handle a committed character from the IME. Returns true if consumed. */
   handleCommit(char: string): boolean {
     if (!this.state) return false;
+
+    if (!this.state.startTime) {
+      this.state.startTime = Date.now();
+    }
 
     const expected = this.state.targetText[this.state.position];
     if (char === expected) {
       this.state.correct++;
       this.state.position++;
       if (this.state.position >= this.state.targetText.length) {
-        // Finished
         if (this.state.mode === 'random-char') {
           this.nextRandomChar();
         } else {
@@ -135,7 +143,6 @@ export class PracticeController {
   }
 
   private startRandomChar(): void {
-    this.articleSelectEl.style.display = 'none';
     const char = this.charPool[Math.floor(Math.random() * this.charPool.length)];
     this.state = {
       mode: 'random-char',
@@ -143,6 +150,7 @@ export class PracticeController {
       position: 0,
       correct: this.state?.mode === 'random-char' ? this.state.correct : 0,
       incorrect: this.state?.mode === 'random-char' ? this.state.incorrect : 0,
+      startTime: this.state?.mode === 'random-char' ? this.state.startTime : null,
     };
     this.renderPrompt();
     this.renderStats();
@@ -156,7 +164,8 @@ export class PracticeController {
   }
 
   private showArticleSelector(): void {
-    this.articleSelectEl.style.display = '';
+    this.articlePromptEl.innerHTML = '';
+    this.articleStatsEl.textContent = '';
     this.articleSelectEl.innerHTML = '';
 
     // Group articles by source
@@ -175,8 +184,8 @@ export class PracticeController {
       heading.textContent = source;
       groupEl.appendChild(heading);
       for (const a of articles) {
-        const btn = document.createElement('button');
-        btn.className = 'practice-article-btn';
+        const btn = document.createElement('fluent-button');
+        btn.setAttribute('appearance', 'outline');
         btn.textContent = a.title;
         btn.addEventListener('click', () => this.startArticle(a.text));
         groupEl.appendChild(btn);
@@ -185,39 +194,48 @@ export class PracticeController {
     }
 
     // Custom article input
-    const customLabel = document.createElement('p');
-    customLabel.textContent = '或自行輸入文章：';
-    this.articleSelectEl.appendChild(customLabel);
+    const customSection = document.createElement('div');
+    customSection.className = 'practice-article-group';
+    const customHeading = document.createElement('h3');
+    customHeading.className = 'practice-article-group-title';
+    customHeading.textContent = '自訂文章';
+    customSection.appendChild(customHeading);
     const customInput = document.createElement('textarea');
     customInput.className = 'practice-custom-input';
     customInput.rows = 3;
     customInput.placeholder = '在此貼上要練習的文章…';
-    this.articleSelectEl.appendChild(customInput);
-    const customBtn = document.createElement('button');
-    customBtn.className = 'practice-article-btn';
+    customSection.appendChild(customInput);
+    const customBtn = document.createElement('fluent-button');
+    customBtn.setAttribute('appearance', 'accent');
     customBtn.textContent = '開始練習';
     customBtn.addEventListener('click', () => {
       const text = customInput.value.trim();
       if (text) this.startArticle(text);
     });
-    this.articleSelectEl.appendChild(customBtn);
-
-    this.promptEl.innerHTML = '';
-    this.statsEl.textContent = '';
+    customSection.appendChild(customBtn);
+    this.articleSelectEl.appendChild(customSection);
   }
 
   private startArticle(text: string): void {
-    this.articleSelectEl.style.display = 'none';
+    this.articleSelectEl.innerHTML = '';
     this.state = {
       mode: 'typing-article',
       targetText: text,
       position: 0,
       correct: 0,
       incorrect: 0,
+      startTime: null,
     };
     this.renderPrompt();
     this.renderStats();
     this.onModeChange?.();
+  }
+
+  private getCodeDisplay(char: string): string {
+    const codes = this.reverseMap.get(char) ?? [];
+    return codes.map(c =>
+      c.split('').map(k => this.mainKeyNames[k] ?? k).join('')
+    ).join(' / ');
   }
 
   private renderPrompt(): void {
@@ -225,12 +243,10 @@ export class PracticeController {
 
     if (this.state.mode === 'random-char') {
       const char = this.state.targetText;
-      const codes = this.reverseMap.get(char) ?? [];
-      const codeDisplay = codes.map(c =>
-        c.split('').map(k => this.mainKeyNames[k] ?? k).join('')
-      ).join(' / ');
+      const codeDisplay = this.getCodeDisplay(char);
 
       this.promptEl.innerHTML = '';
+
       const charEl = document.createElement('div');
       charEl.className = 'practice-target-char';
       charEl.textContent = char;
@@ -239,27 +255,33 @@ export class PracticeController {
       const hintEl = document.createElement('div');
       hintEl.className = 'practice-hint';
       hintEl.textContent = `編碼：${codeDisplay}`;
-      hintEl.style.visibility = 'hidden';
+      hintEl.style.visibility = this.showHint ? 'visible' : 'hidden';
       this.promptEl.appendChild(hintEl);
 
-      const hintBtn = document.createElement('button');
-      hintBtn.className = 'practice-hint-btn';
-      hintBtn.textContent = '顯示提示';
-      hintBtn.addEventListener('click', () => {
-        hintEl.style.visibility = 'visible';
-      });
-      this.promptEl.appendChild(hintBtn);
+      const actions = document.createElement('div');
+      actions.className = 'practice-actions';
 
-      const skipBtn = document.createElement('button');
-      skipBtn.className = 'practice-hint-btn';
+      const hintBtn = document.createElement('fluent-button');
+      hintBtn.setAttribute('appearance', this.showHint ? 'accent' : 'outline');
+      hintBtn.textContent = this.showHint ? '隱藏提示' : '顯示提示';
+      hintBtn.addEventListener('click', () => {
+        this.showHint = !this.showHint;
+        this.renderPrompt();
+      });
+      actions.appendChild(hintBtn);
+
+      const skipBtn = document.createElement('fluent-button');
+      skipBtn.setAttribute('appearance', 'stealth');
       skipBtn.textContent = '跳過';
       skipBtn.addEventListener('click', () => {
         this.nextRandomChar();
       });
-      this.promptEl.appendChild(skipBtn);
+      actions.appendChild(skipBtn);
+
+      this.promptEl.appendChild(actions);
     } else {
-      // Article mode — show text with current position highlighted
-      this.promptEl.innerHTML = '';
+      // Article mode
+      this.articlePromptEl.innerHTML = '';
       const textEl = document.createElement('div');
       textEl.className = 'practice-article-text';
 
@@ -282,52 +304,82 @@ export class PracticeController {
       textEl.appendChild(doneSpan);
       textEl.appendChild(currentSpan);
       textEl.appendChild(remainSpan);
-      this.promptEl.appendChild(textEl);
+      this.articlePromptEl.appendChild(textEl);
 
-      // Show hint for current character
       if (current) {
-        const codes = this.reverseMap.get(current) ?? [];
-        const codeDisplay = codes.map(c =>
-          c.split('').map(k => this.mainKeyNames[k] ?? k).join('')
-        ).join(' / ');
+        const codeDisplay = this.getCodeDisplay(current);
         const hintEl = document.createElement('div');
         hintEl.className = 'practice-hint';
         hintEl.textContent = `編碼：${codeDisplay}`;
-        hintEl.style.visibility = 'hidden';
-        this.promptEl.appendChild(hintEl);
+        hintEl.style.visibility = this.showHint ? 'visible' : 'hidden';
+        this.articlePromptEl.appendChild(hintEl);
 
-        const hintBtn = document.createElement('button');
-        hintBtn.className = 'practice-hint-btn';
-        hintBtn.textContent = '顯示提示';
+        const hintBtn = document.createElement('fluent-button');
+        hintBtn.setAttribute('appearance', this.showHint ? 'accent' : 'outline');
+        hintBtn.setAttribute('size', 'small');
+        hintBtn.textContent = this.showHint ? '隱藏提示' : '顯示提示';
         hintBtn.addEventListener('click', () => {
-          hintEl.style.visibility = 'visible';
+          this.showHint = !this.showHint;
+          this.renderPrompt();
         });
-        this.promptEl.appendChild(hintBtn);
+        this.articlePromptEl.appendChild(hintBtn);
       }
     }
   }
 
   private renderStats(): void {
     if (!this.state) return;
-    const { correct, incorrect } = this.state;
+    const { correct, incorrect, startTime } = this.state;
     const total = correct + incorrect;
     const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
-    this.statsEl.textContent = `正確：${correct}　錯誤：${incorrect}　正確率：${accuracy}%`;
+
+    // Calculate CPM (correct characters per minute)
+    let cpm = 0;
+    if (startTime && correct > 0) {
+      const elapsedMin = (Date.now() - startTime) / 60000;
+      if (elapsedMin > 0) {
+        cpm = Math.round(correct / elapsedMin);
+      }
+    }
+
+    const target = this.state.mode === 'random-char' ? this.statsEl : this.articleStatsEl;
+    target.innerHTML = '';
+
+    const correctBadge = document.createElement('fluent-badge');
+    correctBadge.setAttribute('appearance', 'accent');
+    correctBadge.textContent = `正確 ${correct}`;
+
+    const incorrectBadge = document.createElement('fluent-badge');
+    incorrectBadge.setAttribute('appearance', incorrect > 0 ? 'accent' : 'accent');
+    incorrectBadge.className = incorrect > 0 ? 'badge-error' : '';
+    incorrectBadge.textContent = `錯誤 ${incorrect}`;
+
+    const accuracyBadge = document.createElement('fluent-badge');
+    accuracyBadge.textContent = `正確率 ${accuracy}%`;
+
+    const cpmBadge = document.createElement('fluent-badge');
+    cpmBadge.textContent = `速度 ${cpm} 字/分`;
+
+    target.appendChild(correctBadge);
+    target.appendChild(incorrectBadge);
+    target.appendChild(accuracyBadge);
+    target.appendChild(cpmBadge);
   }
 
   private renderComplete(): void {
-    this.promptEl.innerHTML = '';
+    this.articlePromptEl.innerHTML = '';
+
     const msg = document.createElement('div');
     msg.className = 'practice-complete';
     msg.textContent = '練習完成！';
-    this.promptEl.appendChild(msg);
+    this.articlePromptEl.appendChild(msg);
 
-    const restartBtn = document.createElement('button');
-    restartBtn.className = 'practice-hint-btn';
+    const restartBtn = document.createElement('fluent-button');
+    restartBtn.setAttribute('appearance', 'accent');
     restartBtn.textContent = '再來一次';
     restartBtn.addEventListener('click', () => {
       this.start(this.state!.mode);
     });
-    this.promptEl.appendChild(restartBtn);
+    this.articlePromptEl.appendChild(restartBtn);
   }
 }
