@@ -9,7 +9,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "serve": "node server.mjs",
-    "dev-build": "tsc && vite build && node server.mjs"
+    "dev-build": "node dev-build.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
