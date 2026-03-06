@@ -174,6 +174,9 @@ export class ImeUI {
 
   private attachKeyboardHandler(): void {
     document.addEventListener('keydown', (e) => {
+      // Never intercept key combinations with modifier keys
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
       const key = e.key;
       const consumed = this.engine.handleKey(key);
       if (consumed) {
