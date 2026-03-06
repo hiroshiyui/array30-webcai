@@ -59,7 +59,7 @@ async function init() {
   mainTabs.addEventListener('change', () => {
     const activeTab = mainTabs.querySelector('fluent-tab[aria-selected="true"]');
     const id = activeTab?.id;
-    if (id === 'tab-intro' || id === 'tab-free') {
+    if (id === 'tab-intro' || id === 'tab-free' || id === 'tab-about') {
       practice.stop();
     } else if (id === 'tab-random') {
       practice.start('random-char');

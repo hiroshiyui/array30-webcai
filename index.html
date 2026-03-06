@@ -20,6 +20,7 @@
             <fluent-tab id="tab-free">自由輸入</fluent-tab>
             <fluent-tab id="tab-random">隨機字元</fluent-tab>
             <fluent-tab id="tab-article">文章練習</fluent-tab>
+            <fluent-tab id="tab-about">關於</fluent-tab>
 
             <fluent-tab-panel id="tab-intro-panel">
               <section class="tutorial">
@@ -136,6 +137,34 @@
 
             <fluent-tab-panel id="tab-article-panel">
               <div id="article-area"></div>
+            </fluent-tab-panel>
+
+            <fluent-tab-panel id="tab-about-panel">
+              <section class="tutorial">
+                <h2>關於本站</h2>
+                <p><strong>行列輸入法 Web CAI</strong> 是一個完全在瀏覽器中運行的行列輸入法電腦輔助教學系統，無需安裝任何軟體或輸入法，即可學習與練習行列 30 輸入法。</p>
+
+                <h2>功能特色</h2>
+                <ul>
+                  <li><strong>純瀏覽器運行</strong>：所有運算皆在本機完成，不依賴遠端伺服器</li>
+                  <li><strong>內建虛擬鍵盤</strong>：頁面下方提供行列 30 鍵盤，標示各鍵對應的行列碼</li>
+                  <li><strong>完整鍵碼表</strong>：內建行列 30 鍵碼表、特別碼表及簡碼表</li>
+                  <li><strong>自由輸入</strong>：直接使用行列輸入法打字，熟悉鍵位與字根</li>
+                  <li><strong>隨機字元練習</strong>：隨機出題常用字，可顯示編碼提示</li>
+                  <li><strong>文章練習</strong>：內建古典文學選文，亦可自訂練習文章</li>
+                  <li><strong>即時統計</strong>：追蹤正確率與每分鐘輸入字數</li>
+                </ul>
+
+                <h2>技術架構</h2>
+                <ul>
+                  <li>以 <strong>TypeScript</strong> 開發，<strong>Vite</strong> 建置</li>
+                  <li>介面採用 <strong>Microsoft Fluent UI Web Components</strong></li>
+                  <li>鍵碼表來源：<a href="https://github.com/gontera/array30" target="_blank" rel="noopener">gontera/array30</a>（OpenVanilla 格式 .cin 檔）</li>
+                </ul>
+
+                <h2>授權條款</h2>
+                <p>本專案以 <strong>GNU General Public License v3.0 或更新版本</strong>（GPL-3.0-or-later）授權釋出。原始碼公開於 GitHub。</p>
+              </section>
             </fluent-tab-panel>
           </fluent-tabs>
         </fluent-card>
