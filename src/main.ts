@@ -15,6 +15,10 @@ import { ImeUI } from './ime-ui';
 import { PracticeController } from './practice';
 import './ime-style.css';
 
+import mainCin from './data/array30-OpenVanilla-big-v2023-1.0-20230211.cin?raw';
+import shortcodeCin from './data/array-shortcode-20210725.cin?raw';
+import specialCin from './data/array-special-201509.cin?raw';
+
 provideFluentDesignSystem().register(
   fluentButton(),
   fluentCard(),
@@ -26,18 +30,10 @@ provideFluentDesignSystem().register(
   fluentDesignSystemProvider(),
 );
 
-async function loadCinTable(url: string) {
-  const res = await fetch(url);
-  const text = await res.text();
-  return parseCin(text);
-}
-
-async function init() {
-  const [mainTable, shortcodeTable, specialTable] = await Promise.all([
-    loadCinTable('data/array30-OpenVanilla-big-v2023-1.0-20230211.cin'),
-    loadCinTable('data/array-shortcode-20210725.cin'),
-    loadCinTable('data/array-special-201509.cin'),
-  ]);
+function init() {
+  const mainTable = parseCin(mainCin);
+  const shortcodeTable = parseCin(shortcodeCin);
+  const specialTable = parseCin(specialCin);
 
   const engine = new ImeEngine();
   engine.setTables(mainTable, shortcodeTable, specialTable);

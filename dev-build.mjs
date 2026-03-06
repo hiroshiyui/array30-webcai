@@ -11,7 +11,6 @@ const PORT = 3000;
 
 const WATCH_DIRS = [
   join(__dirname, 'src'),
-  join(__dirname, 'public'),
 ];
 const WATCH_FILES = [
   join(__dirname, 'index.html'),
