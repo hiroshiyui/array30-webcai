@@ -1,0 +1,21 @@
+{
+  "name": "array30-webcai",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Web CAI for Array30 input method (行列輸入法)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "serve": "node server.mjs",
+    "dev-build": "tsc && vite build && node server.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1"
+  },
+  "dependencies": {
+    "@fluentui/web-components": "^2.6.1"
+  }
+}
