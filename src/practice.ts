@@ -73,7 +73,16 @@ export class PracticeController {
     addReverse(special);
     addReverse(shortcode);
 
-    this.charPool = [...seen].filter(ch => {
+    // Random practice pool: use characters from the curated shortcode
+    // and special tables only (common Traditional Chinese characters)
+    const commonChars = new Set<string>();
+    for (const chars of shortcode.charDefs.values()) {
+      for (const ch of chars) commonChars.add(ch);
+    }
+    for (const chars of special.charDefs.values()) {
+      for (const ch of chars) commonChars.add(ch);
+    }
+    this.charPool = [...commonChars].filter(ch => {
       const cp = ch.codePointAt(0)!;
       return cp >= 0x4E00 && cp <= 0x9FFF;
     });
