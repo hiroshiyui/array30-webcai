@@ -6,39 +6,146 @@
     <title>行列輸入法 Web CAI</title>
   </head>
   <body>
-    <div id="app">
-      <header>
-        <h1>行列輸入法 Web CAI</h1>
-        <nav>
-          <ul>
-            <li><a href="#lesson">課程</a></li>
-            <li><a href="#practice">練習</a></li>
-            <li><a href="#about">關於</a></li>
-          </ul>
-        </nav>
+    <fluent-design-system-provider id="app">
+      <header class="app-header">
+        <h1 class="app-title">行列輸入法 Web CAI</h1>
       </header>
 
-      <main>
-        <section id="lesson">
-          <h2>課程</h2>
-        </section>
+      <fluent-divider></fluent-divider>
 
-        <section id="practice">
-          <h2>練習</h2>
-          <div class="practice-mode-toggle">
-            <button id="mode-free" class="practice-mode-btn active">自由輸入</button>
-            <button id="mode-random" class="practice-mode-btn">隨機字元</button>
-            <button id="mode-article" class="practice-mode-btn">文章練習</button>
-          </div>
-          <div id="practice-area"></div>
-          <textarea id="input-area" rows="8" placeholder="使用行列輸入法在此輸入中文…"></textarea>
-        </section>
+      <main class="app-main">
+        <fluent-card class="intro-card">
+          <fluent-tabs id="main-tabs" activeid="tab-intro">
+            <fluent-tab id="tab-intro">教學</fluent-tab>
+            <fluent-tab id="tab-free">自由輸入</fluent-tab>
+            <fluent-tab id="tab-random">隨機字元</fluent-tab>
+            <fluent-tab id="tab-article">文章練習</fluent-tab>
+
+            <fluent-tab-panel id="tab-intro-panel">
+              <section class="tutorial">
+                <h2>什麼是行列輸入法？</h2>
+                <p>行列輸入法是由<strong>廖明德</strong>先生於 1992 年發明的字根式中文輸入法，以免費授權、開放理念著稱。行列 30 使用標準鍵盤上的 <strong>30 個按鍵</strong>（26 個字母鍵加上 <code>;</code> <code>,</code> <code>.</code> <code>/</code>），涵蓋了 Unicode 中日韓統一表意文字，可輸入繁體中文、簡體中文及各擴展區漢字。</p>
+
+                <h2>鍵盤配置</h2>
+                <p>鍵盤分為 <strong>10 行（直行）× 3 列（橫列）</strong>，共 30 鍵。每個按鍵以「行號＋列位」表示：</p>
+                <table class="tutorial-table">
+                  <thead>
+                    <tr>
+                      <th>列位</th>
+                      <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+                      <th>6</th><th>7</th><th>8</th><th>9</th><th>0</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>上 ⇡</strong></td>
+                      <td>Q</td><td>W</td><td>E</td><td>R</td><td>T</td>
+                      <td>Y</td><td>U</td><td>I</td><td>O</td><td>P</td>
+                    </tr>
+                    <tr>
+                      <td><strong>中 -</strong></td>
+                      <td>A</td><td>S</td><td>D</td><td>F</td><td>G</td>
+                      <td>H</td><td>J</td><td>K</td><td>L</td><td>;</td>
+                    </tr>
+                    <tr>
+                      <td><strong>下 ⇣</strong></td>
+                      <td>Z</td><td>X</td><td>C</td><td>V</td><td>B</td>
+                      <td>N</td><td>M</td><td>,</td><td>.</td><td>/</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p>例如 <code>A</code> 鍵代表「1-」（第 1 行、中列），<code>E</code> 鍵代表「3⇡」（第 3 行、上列）。</p>
+
+                <h2>十個基本筆形</h2>
+                <p>行列輸入法將漢字歸納為 <strong>10 個基本筆形</strong>，各自對應一個數字：</p>
+                <table class="tutorial-table">
+                  <thead>
+                    <tr>
+                      <th>數字</th>
+                      <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+                      <th>6</th><th>7</th><th>8</th><th>9</th><th>0</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>筆形</strong></td>
+                      <td>一</td><td>└</td><td>丨</td><td>十</td><td>┐</td>
+                      <td>丶</td><td>ㄇ</td><td>八＼</td><td>丿</td><td>口</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p>記憶方式：觀察每個數字的外形與對應筆形的相似性，例如「1」像「一」，「0」像「口」。</p>
+
+                <h2>字根定位：首筆定行、尾筆定列</h2>
+                <p>每個字根取<strong>首筆</strong>和<strong>尾筆</strong>兩個數字組成座標：</p>
+                <ul>
+                  <li><strong>首筆數字</strong>決定按鍵在哪一<strong>行</strong>（直行 1–0）</li>
+                  <li><strong>尾筆數字</strong>決定按鍵在哪一<strong>列</strong>（0–4 → 上列，5 或無尾筆 → 中列，6–9 → 下列）</li>
+                </ul>
+                <p>如同二維座標，行與列交叉即可定位字根所在的按鍵。</p>
+
+                <h2>取碼原則</h2>
+                <p>將漢字依照筆順拆成數個字根，<strong>最多取四碼</strong>即完成一個字：</p>
+                <ul>
+                  <li><strong>一碼字</strong>：如「的」→ <code>T</code>（5⇡）、「一」→ <code>A</code>（1-）</li>
+                  <li><strong>二碼字</strong>：如「二」→ <code>AA</code>（1- 1-）</li>
+                  <li><strong>三碼字</strong>：依序取前三個字根</li>
+                  <li><strong>四碼字</strong>：取首、二、三、末字根</li>
+                </ul>
+
+                <h2>特別碼與簡碼</h2>
+                <p>為提高輸入速度，行列輸入法提供兩種快捷方式：</p>
+                <ul>
+                  <li><strong>特別碼</strong>：常用字的二鍵快捷輸入，如「大」→ <code>AK</code>、「不」→ <code>AH</code>、「是」→ <code>PC</code></li>
+                  <li><strong>簡碼（一級、二級）</strong>：以一至二鍵對應最常用的字，如 <code>A</code> → 一、到、聽…（按數字鍵選字）</li>
+                </ul>
+                <p>本站已內建完整的行列 30 鍵碼表、特別碼表及簡碼表，無需在作業系統安裝輸入法即可直接練習。</p>
+
+                <h2>開始練習</h2>
+                <p>切換上方分頁即可開始：</p>
+                <ul>
+                  <li><strong>自由輸入</strong>：自由練習打字，熟悉鍵位與字根</li>
+                  <li><strong>隨機字元</strong>：隨機出題，練習單字拆碼</li>
+                  <li><strong>文章練習</strong>：選擇古文或自訂文章，練習連續輸入</li>
+                </ul>
+                <p>頁面下方的虛擬鍵盤顯示了每個按鍵對應的行列碼，可作為即時參考。</p>
+
+                <fluent-divider></fluent-divider>
+
+                <h2>參考資料</h2>
+                <ol>
+                  <li>行列科技官方網站及行列輸入法說明文件</li>
+                  <li>行列輸入法 30 鍵版鍵碼表（v2023-1.0）—— <a href="https://github.com/gontera/array30" target="_blank" rel="noopener">github.com/gontera/array30</a></li>
+                  <li>維基百科〈<a href="https://zh.wikipedia.org/wiki/%E8%A1%8C%E5%88%97%E8%BC%B8%E5%85%A5%E6%B3%95" target="_blank" rel="noopener">行列輸入法</a>〉條目</li>
+                </ol>
+
+                <h2>致謝</h2>
+                <p>感謝<strong>廖明德</strong>先生發明行列輸入法，並以免費授權方式推廣，讓中文輸入更加便捷。</p>
+                <p>感謝<strong>老刀（gontera）</strong>先生整理並維護行列 30 鍵碼表、特別碼表及簡碼表，以開放格式釋出於 GitHub，使本站得以內建完整的行列輸入法資料。</p>
+                <p>感謝所有行列輸入法社群的使用者與貢獻者，持續推動行列輸入法的發展與普及。</p>
+              </section>
+            </fluent-tab-panel>
+
+            <fluent-tab-panel id="tab-free-panel">
+              <textarea id="input-area" rows="8" placeholder="使用行列輸入法在此輸入中文…"></textarea>
+            </fluent-tab-panel>
+
+            <fluent-tab-panel id="tab-random-panel">
+              <div id="practice-area"></div>
+            </fluent-tab-panel>
+
+            <fluent-tab-panel id="tab-article-panel">
+              <div id="article-area"></div>
+            </fluent-tab-panel>
+          </fluent-tabs>
+        </fluent-card>
       </main>
 
-      <footer>
+      <footer class="app-footer">
+        <fluent-divider></fluent-divider>
         <p>行列輸入法 Web CAI</p>
       </footer>
-    </div>
+    </fluent-design-system-provider>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
