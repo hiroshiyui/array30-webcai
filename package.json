@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Web CAI for Array30 input method (行列輸入法)",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
