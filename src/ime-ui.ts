@@ -67,6 +67,23 @@ export class ImeUI {
     const keyboard = document.createElement('div');
     keyboard.className = 'ime-keyboard';
 
+    // Number row (0–9)
+    const numRow = document.createElement('div');
+    numRow.className = 'ime-keyboard-row';
+    for (let n = 1; n <= 10; n++) {
+      const digit = n % 10;
+      const btn = document.createElement('button');
+      btn.className = 'ime-key';
+      btn.dataset.key = String(digit);
+      btn.innerHTML = `<span class="ime-key-main">${digit}</span>`;
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.onKeyInput(String(digit));
+      });
+      numRow.appendChild(btn);
+    }
+    keyboard.appendChild(numRow);
+
     for (const row of KEYBOARD_ROWS) {
       const rowEl = document.createElement('div');
       rowEl.className = 'ime-keyboard-row';
