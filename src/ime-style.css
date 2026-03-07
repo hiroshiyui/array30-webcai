@@ -382,6 +382,49 @@
   justify-content: center;
 }
 
+/* ── Mobile keyboard adjustments ── */
+@media (max-width: 600px) {
+  .ime-keyboard {
+    max-width: 100%;
+    gap: 3px;
+    padding: 2px 0;
+  }
+
+  .ime-keyboard-row {
+    gap: 2px;
+  }
+
+  .ime-key {
+    min-width: 0;
+    max-width: none;
+    height: 42px;
+    font-size: 12px;
+    padding: 1px;
+    border-radius: 3px;
+  }
+
+  .ime-key-main {
+    font-size: 14px;
+  }
+
+  .ime-key-label {
+    font-size: 9px;
+  }
+
+  .ime-action {
+    min-width: 0;
+    font-size: 14px;
+  }
+
+  .ime-space {
+    font-size: 14px;
+  }
+
+  #ime-bar {
+    padding: 2px 4px;
+  }
+}
+
 /* Ensure body has padding so content isn't hidden behind the IME bar */
 body {
   margin: 0;
