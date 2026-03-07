@@ -1,6 +1,6 @@
 {
   "name": "array30-webcai",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "description": "Web CAI for Array30 input method (行列輸入法)",
